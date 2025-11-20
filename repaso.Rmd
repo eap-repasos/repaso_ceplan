@@ -3,6 +3,13 @@ title: "R Notebook"
 output: html_notebook
 ---
 
+
+PRIMERO
+```{r}
+rm(list = ls())
+```
+
+
 La data de este [link](https://www.ceplan.gob.pe/informacion-sobre-zonas-y-departamentos-del-peru/)
 
 Se ha llevado a un repo de [GitHub](https://github.com/eap-repasos/repaso_ceplan)
@@ -77,26 +84,110 @@ ceplanFilasOK=ceplanFilasOK[grep('Provin',ceplanFilasOK[,1]),]
 
 ## Columnas a usar:
 
+* "Porcentaje de nacidos vivos con bajo peso al nacer (2020)\r\n5/ 6/"
 
+* "Porcentaje de desnutrición crónica (Niños menores de 5 años) (2020)"                         
+* "Porcentaje de anemia (Niños entre 6 y 35 meses) (2020)"             
+
+* "Índice de Vulnerabilidad a la Inseguridad Alimentaria (IVIA)(2018)"
+
+* "Índice de Densidad del Estado -IDE (2017)" 
+
+* "Índice de Desarrollo Humano -IDH (2019)"
+
+* "Devengado per cápita en soles (2020) - Actividad"
+
+* "Devengado per cápita en soles (2020) - Inversión"
+
+PRIMERO: RESETEAR!!
 ```{r}
-names(ceplanFilasOK)
+row.names(ceplanFilasOK)=NULL
 ```
 
-Ahora presta atencio a las variables que se soliciten:
-* [30] "Porcentaje de desnutrición crónica\r\n (Niños menores de 5 años) \r\n(2020)\r\n9/"                         
 
-* [31] "Porcentaje de anemia\r\n(Niños entre 6 y 35 meses) (2020)\r\n9/"             
+```{r}
 
-* [32] "Porcentaje de personas de 15 años y más con exceso de peso\r\n(2020)\r\n10/"
 
-* [29] "Índice de Vulnerabilidad a la Inseguridad Alimentaria (IVIA) \r\n(2018)\r\n8/"
+columnasElegidas=grep("Porcentaje de nacidos vivos|Porcentaje de desnutrición|Porcentaje de anemia|Índice|Actividad|Inversión",names(ceplanFilasOK))
+columnasElegidas
+```
 
-* [34] "Índice de Densidad del Estado -IDE\r\n(2017)\r\n12/" 
 
-* [39] "Índice de Desarrollo Humano -IDH\r\n(2019)\r\n15/"
+Verifica:
 
-* [46] "Devengado per cápita en soles (2020) - Actividad\r\n19/"
+```{r}
+ceplanFilasOK[,c(3,columnasElegidas)]
+```
 
-* [47] "Devengado per cápita en soles (2020) - Inversión\r\n19/"
 
-* [48] "Devengado per cápita en soles (2020) - Total\r\n19/"
+Entonces:
+```{r}
+ceplanFilasColsOK=ceplanFilasOK[,c(3,columnasElegidas)]
+```
+
+## Formatos
+
+Nombre de Columna y Tipo de dato:
+
+```{r}
+ceplanOK=ceplanFilasColsOK #copia porsiacaso
+str(ceplanOK)
+```
+
+
+nombres sencillos:
+
+```{r}
+names(ceplanOK)
+```
+
+```{r}
+newNames=c("prov","ninos_bajoPesoNacer","ind_VIA","ninos_desnuCroni","ninos_anem","ind_DdE","ind_DDHH","deve_activi","deve_inver")
+names(ceplanOK)=newNames
+```
+
+
+A numerico!
+```{r}
+
+ceplanOK[,-1]=lapply(ceplanFilasColsOK[,-1],as.numeric)
+```
+
+Quien no se convirtió a numero!!???
+```{r}
+ceplanOK[!complete.cases(ceplanOK),]
+```
+
+Verificar causa:
+```{r}
+ceplanFilasColsOK[158,5]
+```
+
+Habia celda que decía 'S.I' (sin informacion).
+
+
+solo usar sin NAs
+```{r}
+ceplan=ceplanOK[complete.cases(ceplanOK),]
+```
+
+## Grabe mejor version en GitHub
+
+```{r}
+# commit and push
+write.csv(ceplan,"ceplan.csv")
+```
+
+NUEVAMENTE:
+
+```{r}
+rm(list = ls())
+
+linkDescarga2="https://github.com/eap-repasos/repaso_ceplan/raw/refs/heads/main/ceplan.csv"
+ceplan=read.csv(linkDescarga2)
+```
+
+```{r}
+
+```
+
