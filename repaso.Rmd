@@ -1,0 +1,102 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+La data de este [link](https://www.ceplan.gob.pe/informacion-sobre-zonas-y-departamentos-del-peru/)
+
+Se ha llevado a un repo de [GitHub](https://github.com/eap-repasos/repaso_ceplan)
+
+Descargue:
+
+```{r}
+# Nota el 'raw' en el link
+linkDescarga="https://github.com/eap-repasos/repaso_ceplan/raw/refs/heads/main/0.Nacional_Datos-para-el-planeamiento-estrategico_29072021.xlsx"
+
+# para excel:
+library(readxl)
+# hoja '3' es la provincial
+ceplanAll=rio::import(linkDescarga,which = 3)
+class(ceplanAll)
+```
+
+## Filas necesarias
+
+Recupera los titulos si se han perdido:
+
+```{r}
+head(ceplanAll,10)
+```
+
+como los nombres estan en la tercera fila:
+
+```{r}
+ceplanAll[3,]
+```
+Reemplazamos:
+```{r}
+names(ceplanAll)=ceplanAll[3,]
+head(ceplanAll)
+```
+
+Revisa la 'cola':
+
+```{r}
+tail(ceplanAll,20)
+```
+
+Mira columna 1:
+
+
+```{r}
+ceplanAll[,1]
+```
+
+**ESA COLUMNS** te servirá para eliminar filas vacias:
+
+```{r}
+ceplanFilasOK=ceplanAll[!is.na(ceplanAll[,1]),]
+ceplanFilasOK
+```
+
+El tipo de unidad territorial sera util, pero cuidado:
+```{r}
+table(ceplanFilasOK[,1])
+```
+
+Estas son las filas:
+```{r}
+grep('Provin',ceplanFilasOK[,1])
+```
+
+```{r}
+# son 196
+ceplanFilasOK=ceplanFilasOK[grep('Provin',ceplanFilasOK[,1]),]
+```
+
+
+## Columnas a usar:
+
+
+```{r}
+names(ceplanFilasOK)
+```
+
+Ahora presta atencio a las variables que se soliciten:
+* [30] "Porcentaje de desnutrición crónica\r\n (Niños menores de 5 años) \r\n(2020)\r\n9/"                         
+
+* [31] "Porcentaje de anemia\r\n(Niños entre 6 y 35 meses) (2020)\r\n9/"             
+
+* [32] "Porcentaje de personas de 15 años y más con exceso de peso\r\n(2020)\r\n10/"
+
+* [29] "Índice de Vulnerabilidad a la Inseguridad Alimentaria (IVIA) \r\n(2018)\r\n8/"
+
+* [34] "Índice de Densidad del Estado -IDE\r\n(2017)\r\n12/" 
+
+* [39] "Índice de Desarrollo Humano -IDH\r\n(2019)\r\n15/"
+
+* [46] "Devengado per cápita en soles (2020) - Actividad\r\n19/"
+
+* [47] "Devengado per cápita en soles (2020) - Inversión\r\n19/"
+
+* [48] "Devengado per cápita en soles (2020) - Total\r\n19/"
