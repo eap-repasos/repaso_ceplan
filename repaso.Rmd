@@ -175,7 +175,7 @@ ceplan=ceplanOK[complete.cases(ceplanOK),]
 
 ```{r}
 # commit and push
-write.csv(ceplan,"ceplan.csv")
+write.csv(ceplan,"ceplan.csv",row.names = F)
 ```
 
 NUEVAMENTE:
@@ -188,6 +188,115 @@ ceplan=read.csv(linkDescarga2)
 ```
 
 ```{r}
+names(ceplan)
+```
 
+Las variables:
+
+* "Porcentaje de nacidos vivos con bajo peso al nacer (2020)\r\n5/ 6/"
+
+* "Porcentaje de desnutrición crónica (Niños menores de 5 años) (2020)"                         
+* "Porcentaje de anemia (Niños entre 6 y 35 meses) (2020)"             
+
+* "Devengado per cápita en soles (2020) - Actividad"
+
+* "Devengado per cápita en soles (2020) - Inversión"
+
+hay 2 conceptos?
+
+```{r}
+select=grep("nino|deve",names(ceplan))
+theData=ceplan[,select]
+row.names(theData)=ceplan$prov
+
+library(polycor)
+corMatrix=polycor::hetcor(theData)$correlations
+```
+
+
+```{r}
+library(psych)
+psych::KMO(corMatrix) 
+```
+
+```{r}
+cortest.bartlett(corMatrix,n=nrow(theData))$p.value>0.05
+```
+
+```{r}
+library(matrixcalc)
+
+is.singular.matrix(corMatrix)
+```
+
+```{r}
+fa.parallel(theData, fa = 'fa',correct = T,plot = F)
+```
+
+```{r}
+library(GPArotation)
+resfa <- fa(theData,
+            nfactors = 2,
+            cor = 'mixed',
+            rotate = "varimax", #oblimin?
+            fm="ml")
+print(resfa$loadings)
+```
+
+```{r}
+fa.diagram(resfa,main = "Resultados del EFA")
+```
+
+Ud quiere obtener 5 clusters, usando:
+
+* "Índice de Vulnerabilidad a la Inseguridad Alimentaria (IVIA)(2018)"
+
+* "Índice de Densidad del Estado -IDE (2017)"
+
+* "Índice de Desarrollo Humano -IDH (2019)"
+
+Qué prefiere, kmedoides(pam) o agnes?
+
+```{r}
+
+
+select2=grep("ind",names(ceplan))
+dataClus=ceplan[,select2]
+row.names(dataClus)=ceplan$prov
+
+library(cluster)
+g.dist = daisy(dataClus, metric="gower")
+
+```
+
+```{r}
+library(factoextra)
+res.pam=pam(g.dist,5,cluster.only = F)
+dataClus$pam=res.pam$cluster
+
+res.agnes<- hcut(g.dist, k = 5,hc_func='agnes',hc_method = "ward.D")
+dataClus$agnes=res.agnes$cluster
+```
+```{r}
+fviz_silhouette(res.agnes,print.summary = F)
+
+```
+```{r}
+fviz_silhouette(res.pam,print.summary = F)
+
+```
+```{r}
+library(magrittr)
+silAGNES=data.frame(res.agnes$silinfo$widths)
+silAGNES$country=row.names(silAGNES)
+poorAGNES=silAGNES[silAGNES$sil_width<0,'country']%>%sort()
+poorAGNES
+```
+
+```{r}
+silPAM=data.frame(res.pam$silinfo$widths)
+silPAM$country=row.names(silPAM)
+poorPAM=silPAM[silPAM$sil_width<0,'country']%>%sort()
+poorPAM
 ```
 
